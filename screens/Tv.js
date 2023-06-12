@@ -1,9 +1,9 @@
 import React from "react";
-import styled from "styled-components/native";
-import { FlatList, ScrollView } from "react-native-gesture-handler";
+import { FlatList, ScrollView, RefreshControl } from "react-native";
 import Loader from "../components/Loader";
 import VMedia from "../components/VMedia";
-import { useQueries } from "@tanstack/react-query";
+import { useQueries, useQueryClient } from "@tanstack/react-query";
+import HList from "../components/HList";
 
 //---------------------------
 const options = {
@@ -17,6 +17,7 @@ const options = {
 //---------------------------
 
 const Tv = () => {
+  const queryClient = useQueryClient();
   const Items = ["on_the_air", "popular", "top_rated"];
   const Results = useQueries({
     queries: Items.map((item) => {
@@ -30,47 +31,27 @@ const Tv = () => {
       };
     }),
   });
-  return Results[0]?.data ? (
-    <ScrollView>
-      <FlatList
-        data={Results[0]?.data?.results}
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        renderItem={({ item }) => (
-          <VMedia
-            posterPath={item.poster_path}
-            originalTitle={item.original_name}
-            voteAverage={item.vote_average}
-          />
-        )}
-      />
-      <FlatList
-        data={Results[1]?.data?.results}
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        renderItem={({ item }) => (
-          <VMedia
-            posterPath={item.poster_path}
-            originalTitle={item.original_name}
-            voteAverage={item.vote_average}
-          />
-        )}
-      />
-      <FlatList
-        data={Results[2]?.data?.results}
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        renderItem={({ item }) => (
-          <VMedia
-            posterPath={item.poster_path}
-            originalTitle={item.original_name}
-            voteAverage={item.vote_average}
-          />
-        )}
-      />
-    </ScrollView>
-  ) : (
+  const refreshing =
+    Results[0].isRefetching ||
+    Results[1].isRefetching ||
+    Results[2].isRefetching;
+
+  const onRefresh = () => {
+    queryClient.refetchQueries(["Tv"]);
+  };
+  return !Results[0]?.data ? (
     <Loader />
+  ) : (
+    <ScrollView
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+      }
+      contentContainerStyle={{ paddingVertical: 30 }}
+    >
+      <HList title="On The Air" data={Results[0]?.data.results} />
+      <HList title="Popular TV" data={Results[1]?.data.results} />
+      <HList title="Top Rated TV" data={Results[2]?.data.results} />
+    </ScrollView>
   );
 };
 

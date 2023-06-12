@@ -1,9 +1,9 @@
 import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import Movies from "../screens/Movies";
-import { Ionicons } from "@expo/vector-icons";
 import Tv from "../screens/Tv";
 import Search from "../screens/Search";
+import { Ionicons } from "@expo/vector-icons";
 
 const Tab = createBottomTabNavigator();
 
@@ -20,7 +20,7 @@ const Tabs = () => {
         }}
       />
       <Tab.Screen
-        name="Tv"
+        name="TV"
         component={Tv}
         options={{
           tabBarIcon: ({ color, size }) => (

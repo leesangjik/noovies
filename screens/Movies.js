@@ -7,6 +7,7 @@ import HMedia from "../components/HMedia";
 import VMedia from "../components/VMedia";
 import Slide from "../components/Slide";
 import Loader from "../components/Loader";
+import HList from "../components/HList";
 
 const ListTitle = styled.Text`
   color: black;
@@ -96,27 +97,10 @@ const Movies = () => {
               />
             ))}
           </Swiper>
-          <ListContainer>
-            <ListTitle>Popular Movies</ListTitle>
-            {Results[1]?.data?.results ? (
-              <FlatList
-                style={{ marginTop: 20 }}
-                horizontal
-                data={Results[1]?.data.results}
-                keyExtractor={(item) => item.id + ""}
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={{ paddingHorizontal: 30 }}
-                ItemSeparatorComponent={VSeparator}
-                renderItem={({ item }) => (
-                  <VMedia
-                    posterPath={item.poster_path || ""}
-                    originalTitle={item.original_title}
-                    voteAverage={item.vote_average}
-                  />
-                )}
-              />
-            ) : null}
-          </ListContainer>
+
+          {Results[1]?.data.results ? (
+            <HList title="Popular Movies" data={Results[1]?.data.results} />
+          ) : null}
           <ComingSoonTitle>Coming soon</ComingSoonTitle>
         </>
       }
