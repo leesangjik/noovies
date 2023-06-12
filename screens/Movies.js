@@ -1,27 +1,18 @@
 import { useQueries, useQueryClient } from "@tanstack/react-query";
 import React, { useState } from "react";
-import { ActivityIndicator, Dimensions, FlatList } from "react-native";
+import { Dimensions, FlatList } from "react-native";
 import styled from "styled-components/native";
 import Swiper from "react-native-swiper";
 import HMedia from "../components/HMedia";
 import VMedia from "../components/VMedia";
 import Slide from "../components/Slide";
-
-const Lodaer = styled.View`
-  flex: 1;
-  justify-content: center;
-  align-items: center;
-`;
+import Loader from "../components/Loader";
 
 const ListTitle = styled.Text`
   color: black;
   font-size: 18px;
   font-weight: 600;
   margin-left: 30px;
-`;
-
-const PopularScroll = styled.FlatList`
-  margin-top: 20px;
 `;
 
 //---------------------------
@@ -74,23 +65,8 @@ const Movies = () => {
     await queryClient.refetchQueries(["Moives"]);
     setRefreshing(false);
   };
-  const renderVMedia = ({ item }) => (
-    <VMedia
-      posterPath={item.poster_path}
-      originalTitle={item.original_title}
-      voteAverage={item.vote_average}
-    />
-  );
-  const renderHMedia = ({ item }) => (
-    <HMedia
-      posterPath={item.poster_path}
-      originalTitle={item.original_title}
-      overview={item.overview}
-      releaseDate={item.release_date}
-    />
-  );
-  const movieKeyExtractor = (item) => item.id + "";
-  return Results[0].data ? (
+
+  return Results[0]?.data ? (
     <FlatList
       onRefresh={onRefresh}
       refreshing={refreshing}
@@ -109,11 +85,11 @@ const Movies = () => {
               height: SCREEN_HEIGHT / 4,
             }}
           >
-            {Results[0]?.data.results.map((movie) => (
+            {Results[0]?.data?.results.map((movie) => (
               <Slide
                 key={movie.id}
-                backdropPath={movie.backdrop_path}
-                posterPath={movie.poster_path}
+                backdropPath={movie.backdrop_path || ""}
+                posterPath={movie.poster_path || ""}
                 originalTitle={movie.original_title}
                 voteAverage={movie.vote_average}
                 overview={movie.overview}
@@ -122,28 +98,42 @@ const Movies = () => {
           </Swiper>
           <ListContainer>
             <ListTitle>Popular Movies</ListTitle>
-            <PopularScroll
-              data={Results[1]?.data.results}
-              horizontal
-              keyExtractor={movieKeyExtractor}
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={{ paddingHorizontal: 30 }}
-              ItemSeparatorComponent={VSeparator}
-              renderItem={renderVMedia}
-            />
+            {Results[1]?.data?.results ? (
+              <FlatList
+                style={{ marginTop: 20 }}
+                horizontal
+                data={Results[1]?.data.results}
+                keyExtractor={(item) => item.id + ""}
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={{ paddingHorizontal: 30 }}
+                ItemSeparatorComponent={VSeparator}
+                renderItem={({ item }) => (
+                  <VMedia
+                    posterPath={item.poster_path || ""}
+                    originalTitle={item.original_title}
+                    voteAverage={item.vote_average}
+                  />
+                )}
+              />
+            ) : null}
           </ListContainer>
           <ComingSoonTitle>Coming soon</ComingSoonTitle>
         </>
       }
-      data={Results[2]?.data.results}
-      keyExtractor={movieKeyExtractor}
+      data={Results[2]?.data?.results}
+      keyExtractor={(item) => item.id + ""}
       ItemSeparatorComponent={HSeparator}
-      renderItem={renderHMedia}
+      renderItem={({ item }) => (
+        <HMedia
+          posterPath={item.poster_path || ""}
+          originalTitle={item.original_title}
+          overview={item.overview}
+          releaseDate={item.release_date}
+        />
+      )}
     />
   ) : (
-    <Lodaer>
-      <ActivityIndicator />
-    </Lodaer>
+    <Loader />
   );
 };
 
