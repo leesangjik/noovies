@@ -23,7 +23,7 @@ const Tv = () => {
   const Results = useQueries({
     queries: Items.map((item) => {
       return {
-        queryKey: ["Tv", item],
+        queryKey: ["TVs", item],
         queryFn: () =>
           fetch(
             `https://api.themoviedb.org/3/tv/${item}?language=en-US&page=1`,
@@ -35,7 +35,7 @@ const Tv = () => {
 
   const onRefresh = async () => {
     setRefreshing(true);
-    await queryClient.refetchQueries(["Tv"]);
+    await queryClient.refetchQueries(["TVs"]);
     setRefreshing(false);
   };
 

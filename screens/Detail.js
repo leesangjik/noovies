@@ -1,9 +1,13 @@
 import React, { useEffect } from "react";
-import { Dimensions, StyleSheet } from "react-native";
+import { Dimensions, StyleSheet, Linking } from "react-native";
 import styled from "styled-components/native";
 import Poster from "../components/Poster";
 import { makeImgPath } from "../utils";
 import { LinearGradient } from "expo-linear-gradient";
+import { useQuery } from "@tanstack/react-query";
+import Loader from "../components/Loader";
+import { Ionicons } from "@expo/vector-icons";
+import * as WebBrowser from "expo-web-browser";
 
 const { height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -29,11 +33,37 @@ const Title = styled.Text`
 
 const Overview = styled.Text`
   color: black;
+
+  margin: 20px 0;
+`;
+
+const VideoBtn = styled.TouchableOpacity`
+  flex-direction: row;
+`;
+const BtnText = styled.Text`
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 5px;
+  line-height: 24px;
+  margin-left: 5px;
+`;
+
+const Data = styled.View`
   padding: 0px 20px;
-  margin-top: 15px;
 `;
 
 const Background = styled.Image``;
+
+//---------------------------
+const options = {
+  method: "GET",
+  headers: {
+    accept: "application/json",
+    Authorization:
+      "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIwZWYxZTkzMjFkMTViNjk5YWFiYzEwOWUxYjlhN2MxNyIsInN1YiI6IjY0ODJmZGM1ZTM3NWMwMDEzOWJmNWEyNCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.mwkDD_hF52XP3hV_f975Yrwq2k7sqMp9dtVrJh-U7QI",
+  },
+};
+//---------------------------
 
 const Detail = ({ navigation: { setOptions }, route: { params } }) => {
   useEffect(() => {
@@ -41,6 +71,25 @@ const Detail = ({ navigation: { setOptions }, route: { params } }) => {
       title: "original_title" in params ? "Movie" : "TV Show",
     });
   }, []);
+  const isMovie = "original_title" in params;
+  const Results = useQuery({
+    queryKey: [isMovie ? "movie" : "tv", params.id],
+    queryFn: ({ queryKey }) => {
+      const [_, id] = queryKey;
+      return fetch(
+        `https://api.themoviedb.org/3/${
+          isMovie ? "movie" : "tv"
+        }/${id}?append_to_response=videos,images`,
+        options
+      ).then((response) => response.json());
+    },
+  });
+
+  const openYTLink = async (videoID) => {
+    const baseUrl = `http://m.youtube.com/watch?v=${videoID}`;
+    await WebBrowser.openBrowserAsync(baseUrl);
+  };
+
   return (
     <Container>
       <Header>
@@ -62,7 +111,16 @@ const Detail = ({ navigation: { setOptions }, route: { params } }) => {
           </Title>
         </Column>
       </Header>
-      <Overview>{params.overview}.....123123</Overview>
+      <Data>
+        <Overview>{params.overview ? params.overview : "No overview"}</Overview>
+        {Results.isInitialLoading ? <Loader /> : null}
+        {Results?.data?.videos?.results?.map((video) => (
+          <VideoBtn key={video.key} onpress={() => openYTLink(video.key)}>
+            <Ionicons name="logo-youtube" size={24} />
+            <BtnText>{video.name}</BtnText>
+          </VideoBtn>
+        ))}
+      </Data>
     </Container>
   );
 };
