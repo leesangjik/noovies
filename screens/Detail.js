@@ -1,5 +1,5 @@
-import React, { useEffect } from "react";
-import { Dimensions, StyleSheet, Linking } from "react-native";
+import React, { useCallback, useEffect } from "react";
+import { Dimensions, StyleSheet, Linking, Button, Alert } from "react-native";
 import styled from "styled-components/native";
 import Poster from "../components/Poster";
 import { makeImgPath } from "../utils";
@@ -65,6 +65,24 @@ const options = {
 };
 //---------------------------
 
+const OpenURLButton = ({ url, name, content }) => {
+  const handlePress = useCallback(async () => {
+    // Checking if the link is supported for links with custom URL scheme.
+    const supported = await Linking.canOpenURL(url);
+
+    if (supported) {
+      // Opening the link with some app, if the URL scheme is "http" the web link should be opened
+      // by some browser in the mobile
+      await Linking.openURL(url);
+    } else {
+      console.log(supported, url, " //Key is", content);
+      Alert.alert(`Don't know how to open this URL: ${url}`);
+    }
+  }, [url]);
+
+  return <Button title={name} onPress={handlePress} />;
+};
+
 const Detail = ({ navigation: { setOptions }, route: { params } }) => {
   useEffect(() => {
     setOptions({
@@ -84,11 +102,6 @@ const Detail = ({ navigation: { setOptions }, route: { params } }) => {
       ).then((response) => response.json());
     },
   });
-
-  const openYTLink = async (videoID) => {
-    const baseUrl = `http://m.youtube.com/watch?v=${videoID}`;
-    await WebBrowser.openBrowserAsync(baseUrl);
-  };
 
   return (
     <Container>
@@ -115,10 +128,16 @@ const Detail = ({ navigation: { setOptions }, route: { params } }) => {
         <Overview>{params.overview ? params.overview : "No overview"}</Overview>
         {Results.isInitialLoading ? <Loader /> : null}
         {Results?.data?.videos?.results?.map((video) => (
-          <VideoBtn key={video.key} onpress={() => openYTLink(video.key)}>
-            <Ionicons name="logo-youtube" size={24} />
-            <BtnText>{video.name}</BtnText>
-          </VideoBtn>
+          // <VideoBtn key={video.key} onpress={() => openYTLink(video.key)}>
+          //   <Ionicons name="logo-youtube" size={24} />
+          //   <BtnText>{video.name}</BtnText>
+          // </VideoBtn>
+          <OpenURLButton
+            key={video.id}
+            content={video.key}
+            name={video.name}
+            url={`https://youtu.be/${video.key}`}
+          ></OpenURLButton>
         ))}
       </Data>
     </Container>
