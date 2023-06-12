@@ -1,7 +1,7 @@
-import React from "react";
-import { FlatList, ScrollView, RefreshControl } from "react-native";
+import React, { useState } from "react";
+import { ScrollView, RefreshControl } from "react-native";
 import Loader from "../components/Loader";
-import VMedia from "../components/VMedia";
+
 import { useQueries, useQueryClient } from "@tanstack/react-query";
 import HList from "../components/HList";
 
@@ -17,6 +17,7 @@ const options = {
 //---------------------------
 
 const Tv = () => {
+  const [refreshing, setRefreshing] = useState(false);
   const queryClient = useQueryClient();
   const Items = ["on_the_air", "popular", "top_rated"];
   const Results = useQueries({
@@ -31,13 +32,11 @@ const Tv = () => {
       };
     }),
   });
-  const refreshing =
-    Results[0].isRefetching ||
-    Results[1].isRefetching ||
-    Results[2].isRefetching;
 
-  const onRefresh = () => {
-    queryClient.refetchQueries(["Tv"]);
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await queryClient.refetchQueries(["Tv"]);
+    setRefreshing(false);
   };
   return !Results[0]?.data ? (
     <Loader />
