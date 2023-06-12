@@ -2,8 +2,8 @@ import React from "react";
 import styled from "styled-components/native";
 import { makeImgPath } from "../utils";
 import Poster from "./Poster";
-import { View } from "react-native";
-import { StyleSheet } from "react-native";
+import { TouchableWithoutFeedback, StyleSheet, View } from "react-native";
+import { useNavigation } from "@react-navigation/native";
 
 const BgImg = styled.Image``;
 
@@ -26,12 +26,12 @@ const Column = styled.View`
   width: 60%;
 `;
 
-const OverView = styled.Text`
+const Overview = styled.Text`
   margin-top: 10px;
   color: white;
 `;
 
-const Vote = styled(OverView)`
+const Votes = styled(Overview)`
   font-size: 12px;
 `;
 
@@ -41,23 +41,35 @@ const Slide = ({
   originalTitle,
   voteAverage,
   overview,
+  fullData,
 }) => {
+  const navigation = useNavigation();
+  const goToDetail = () => {
+    navigation.navigate("Stack", {
+      screen: "Detail",
+      params: {
+        ...fullData,
+      },
+    });
+  };
   return (
-    <View style={{ flex: 1 }}>
-      <BgImg
-        source={{ uri: makeImgPath(backdropPath) }}
-        style={StyleSheet.absoluteFill}
-        blurRadius={80}
-      />
-      <Wrapper>
-        <Poster path={posterPath} />
-        <Column>
-          <Title>{originalTitle}</Title>
-          {voteAverage > 0 ? <Vote>👍{voteAverage}/10</Vote> : null}
-          <OverView>{overview.slice(0, 100)}...</OverView>
-        </Column>
-      </Wrapper>
-    </View>
+    <TouchableWithoutFeedback onPress={goToDetail}>
+      <View style={{ flex: 1 }}>
+        <BgImg
+          style={StyleSheet.absoluteFill}
+          source={{ uri: makeImgPath(backdropPath) }}
+        />
+
+        <Wrapper>
+          <Poster path={posterPath} />
+          <Column>
+            <Title>{originalTitle}</Title>
+            {voteAverage > 0 ? <Votes>⭐️ {voteAverage}/10</Votes> : null}
+            <Overview>{overview.slice(0, 100)}...</Overview>
+          </Column>
+        </Wrapper>
+      </View>
+    </TouchableWithoutFeedback>
   );
 };
 

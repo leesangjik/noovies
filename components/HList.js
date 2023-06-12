@@ -34,6 +34,7 @@ const HList = ({ title, data }) => (
           posterPath={item.poster_path}
           originalTitle={item.original_title ?? item.original_name}
           voteAverage={item.vote_average}
+          fullData={item}
         />
       )}
     />
