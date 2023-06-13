@@ -1,5 +1,13 @@
 import React, { useCallback, useEffect } from "react";
-import { Dimensions, StyleSheet, Linking, Button, Alert } from "react-native";
+import {
+  Dimensions,
+  StyleSheet,
+  Linking,
+  Button,
+  Alert,
+  Share,
+  Platform,
+} from "react-native";
 import styled from "styled-components/native";
 import Poster from "../components/Poster";
 import { makeImgPath } from "../utils";
@@ -8,6 +16,7 @@ import { useQuery } from "@tanstack/react-query";
 import Loader from "../components/Loader";
 import { Ionicons } from "@expo/vector-icons";
 import * as WebBrowser from "expo-web-browser";
+import { TouchableOpacity } from "react-native";
 
 const { height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -75,8 +84,11 @@ const OpenURLButton = ({ url, name, content }) => {
       // by some browser in the mobile
       await WebBrowser.openBrowserAsync(url);
     } else {
-      console.log(supported, url, " //Key is", content);
-      Alert.alert(`Don't know how to open this URL: ${url}`);
+      await WebBrowser.openBrowserAsync(
+        `https://www.google.com/search?q=${content}`
+      );
+      // console.log(supported, url, " //Key is", content);
+      // Alert.alert(`Don't know how to open this URL: ${url}`);
     }
   }, [url]);
 
@@ -84,11 +96,6 @@ const OpenURLButton = ({ url, name, content }) => {
 };
 
 const Detail = ({ navigation: { setOptions }, route: { params } }) => {
-  useEffect(() => {
-    setOptions({
-      title: "original_title" in params ? "Movie" : "TV Show",
-    });
-  }, []);
   const isMovie = "original_title" in params;
   const Results = useQuery({
     queryKey: [isMovie ? "movie" : "tv", params.id],
@@ -102,6 +109,48 @@ const Detail = ({ navigation: { setOptions }, route: { params } }) => {
       ).then((response) => response.json());
     },
   });
+
+  const shareMedia = async () => {
+    const isAndroid = Platform.OS === "android";
+    const homepage = isMovie
+      ? `https://www.imdb.com/title/${Results.data.imdb_id}`
+      : Results.data.homepage;
+    if (isAndroid) {
+      await Share.share({
+        message: `${params.overview}\n Check it out: ${homepage}`,
+        title:
+          "original_title" in params
+            ? params.original_title
+            : params.original_name,
+      });
+    }
+    await Share.share({
+      url: homepage,
+      title:
+        "original_title" in params
+          ? params.original_title
+          : params.original_name,
+    });
+  };
+  const ShareButton = () => (
+    <TouchableOpacity onPress={shareMedia}>
+      <Ionicons name="share-outline" size={20} />
+    </TouchableOpacity>
+  );
+
+  useEffect(() => {
+    setOptions({
+      title: "original_title" in params ? "Movie" : "TV Show",
+    });
+  }, []);
+
+  useEffect(() => {
+    if (Results.data) {
+      setOptions({
+        headerRight: () => <ShareButton />,
+      });
+    }
+  }, []);
 
   return (
     <Container>
