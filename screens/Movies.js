@@ -1,4 +1,8 @@
-import { useQueries, useQueryClient } from "@tanstack/react-query";
+import {
+  useInfiniteQuery,
+  useQueries,
+  useQueryClient,
+} from "@tanstack/react-query";
 import React, { useState } from "react";
 import { Dimensions, FlatList } from "react-native";
 import styled from "styled-components/native";
@@ -47,7 +51,7 @@ const { height: SCREEN_HEIGHT } = Dimensions.get("window");
 const Movies = () => {
   const [refreshing, setRefreshing] = useState(false);
   const queryClient = useQueryClient();
-  const Items = ["now_playing", "popular", "upcoming"];
+  const Items = ["now_playing", "popular"];
   const Results = useQueries({
     queries: Items.map((item) => {
       return {
@@ -61,14 +65,27 @@ const Movies = () => {
     }),
   });
 
+  const upcomingData = useInfiniteQuery(["upcoming"], () =>
+    fetch(
+      `https://api.themoviedb.org/3/movie/upcoming?language=en-US&page=1`,
+      options
+    ).then((response) => response.json())
+  );
+
   const onRefresh = async () => {
     setRefreshing(true);
     await queryClient.refetchQueries(["Moives"]);
     setRefreshing(false);
   };
 
+  const loadMore = () => {
+    alert("load More!");
+  };
+
   return Results[0]?.data ? (
     <FlatList
+      onEndReached={loadMore}
+      onEndReachedThreshold={0.2}
       onRefresh={onRefresh}
       refreshing={refreshing}
       ListHeaderComponent={
@@ -101,13 +118,13 @@ const Movies = () => {
               : null}
           </Swiper>
 
-          {Results[1]?.data.results ? (
-            <HList title="Popular Movies" data={Results[1]?.data.results} />
+          {Results[1]?.data ? (
+            <HList title="Popular Movies" data={Results[1].data.results} />
           ) : null}
           <ComingSoonTitle>Coming soon</ComingSoonTitle>
         </>
       }
-      data={Results[2]?.data?.results}
+      data={upcomingData.data.pages.map((page) => page.results).flat()}
       keyExtractor={(item) => item.id + ""}
       ItemSeparatorComponent={HSeparator}
       renderItem={({ item }) => (
