@@ -150,7 +150,7 @@ const Detail = ({ navigation: { setOptions }, route: { params } }) => {
         headerRight: () => <ShareButton />,
       });
     }
-  }, []);
+  }, [Results.data]);
 
   return (
     <Container>
