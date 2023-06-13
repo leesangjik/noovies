@@ -86,17 +86,19 @@ const Movies = () => {
               height: SCREEN_HEIGHT / 4,
             }}
           >
-            {Results[0]?.data?.results.map((movie) => (
-              <Slide
-                key={movie.id}
-                backdropPath={movie.backdrop_path || ""}
-                posterPath={movie.poster_path || ""}
-                originalTitle={movie.original_title}
-                voteAverage={movie.vote_average}
-                overview={movie.overview}
-                fullData={movie}
-              />
-            ))}
+            {Results[0]?.data
+              ? Results[0].data.results.map((movie) => (
+                  <Slide
+                    key={movie.id}
+                    backdropPath={movie.backdrop_path || ""}
+                    posterPath={movie.poster_path || ""}
+                    originalTitle={movie.original_title}
+                    voteAverage={movie.vote_average}
+                    overview={movie.overview}
+                    fullData={movie}
+                  />
+                ))
+              : null}
           </Swiper>
 
           {Results[1]?.data.results ? (

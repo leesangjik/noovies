@@ -58,6 +58,7 @@ const Slide = ({
         <BgImg
           style={StyleSheet.absoluteFill}
           source={{ uri: makeImgPath(backdropPath) }}
+          blurRadius={80}
         />
 
         <Wrapper>
